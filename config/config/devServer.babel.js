@@ -1,4 +1,5 @@
 export default {
-  contentBase: './dist',
-  // contentBase: './src',
+  port: 8000,
+  // contentBase: './dist',
+  contentBase: './src',
 };
