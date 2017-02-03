@@ -2,12 +2,15 @@ import {
   optimize,
   DefinePlugin,
   ProvidePlugin,
-  NoErrorsPlugin,
-  LoaderOptionsPlugin, } from 'webpack';
+  LoaderOptionsPlugin,
+  NoEmitOnErrorsPlugin, } from 'webpack';
+import precss from 'precss';
+import rucksack from 'rucksack-css';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import ExtractTextWebpackPlugin from 'extract-text-webpack-plugin';
 import ScriptExtHtmlWebpackPlugin from 'script-ext-html-webpack-plugin';
 import { publicPath } from './output.babel.js';
+import { pathTo } from './resolve.babel';
 
 export const extractTextWebpackPlugin = new ExtractTextWebpackPlugin({
   // filename: '[name]-[hash].bundle.css?ver=[chunkhash]',
@@ -37,15 +40,19 @@ const htmlWebpackPlugin = env => {
   return new HtmlWebpackPlugin(HtmlWebpackPluginConfig);
 };
 
-/*
-  Warniing! do not use `-p` webpack build option with it!
-  if you want compage -p with this solution:
-  - comment out `...productionPlugins(env),` line
-  - run build with command: `npm run build -- -p`
+const AUTOPREFIXER_BROWSERS = [
+  'last 4 versions',
+  'Android 2.3',
+  'Android >= 4',
+  'Chrome >= 35',
+  'Firefox >= 28',
+  'Explorer >= 9',
+  'ie >= 9',
+  'iOS >= 7',
+  'Opera >= 12',
+  'Safari >= 7.1',
+];
 
-  read more here:
-  https://webpack.js.org/guides/production-build/#components/sidebar/sidebar.jsx
-*/
 const productionPlugins = env => env !== 'prod' ? [] : [
   // production death code (using in libs like react...);
   new DefinePlugin({
@@ -55,19 +62,14 @@ const productionPlugins = env => env !== 'prod' ? [] : [
   }),
   // minification:
   new optimize.UglifyJsPlugin({
-    compress:{
-      warnings: false,
-    },
-  }),
-  // apply any optimizations for loaders they can do to speed up build time with no debugging
-  new LoaderOptionsPlugin({
-    minimize: true,
-    debug: false,
+    mangle: { keep_fnames: true, },
+    compress: { warnings: false, },
+    sourceMap: env !== 'prod',
   }),
 ];
 
 export default env => [
-  new NoErrorsPlugin(),
+  new NoEmitOnErrorsPlugin(),
   extractTextWebpackPlugin,
   new optimize.CommonsChunkPlugin({
     name: 'vendors',
@@ -83,4 +85,35 @@ export default env => [
   htmlWebpackPlugin(env),
   new ScriptExtHtmlWebpackPlugin({ defaultAttribute: 'defer', }),
   ...productionPlugins(env),
+  // apply any optimizations for loaders they can do to speed up build time with no debugging
+  // fix webpack2 + extract-text-webpack-plugin issue postcss config file not found, or:
+  // https://github.com/webpack/webpack/issues/3018#issuecomment-248633498
+  new LoaderOptionsPlugin({
+    options: {
+      context: pathTo('.'),
+      babel: {
+        presets: [
+          'es2015',
+          'stage-0',
+          'react',
+        ],
+        plugins: [
+          'transform-class-properties',
+          'syntax-dynamic-import',
+          'react-html-attrs',
+        ],
+      },
+      postcss: [
+        precss,
+        rucksack({
+          fallbacks: true,
+          autoprefixer: {
+            browsers: AUTOPREFIXER_BROWSERS,
+          },
+        }),
+      ],
+    },
+    minimize: env === 'prod',
+    debug: env !== 'prod',
+  }),
 ];

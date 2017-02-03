@@ -1,11 +1,11 @@
-import entry from './config/entry.babel';
-import output from './config/output.babel';
-import module from './config/module.babel';
-import plugins from './config/plugins.babel';
-import resolve from './config/resolve.babel';
-import devtool from './config/devtool.babel';
-import devServer from './config/devServer.babel';
-import node from './config/node.babel';
+import entry from './webpack/entry.babel';
+import output from './webpack/output.babel';
+import module from './webpack/module.babel';
+import plugins from './webpack/plugins.babel';
+import resolve from './webpack/resolve.babel';
+import devtool from './webpack/devtool.babel';
+import devServer from './webpack/webpack-dev-server.babel';
+import node from './webpack/node.babel';
 
 export default env => ({
   entry,

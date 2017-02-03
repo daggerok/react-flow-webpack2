@@ -8,7 +8,6 @@ const target = document.querySelector('.app');
 // const app = (props) => (
 //   <a target='_blank' href={webpack2Url}>meet webpack 2</a>
 // );
-//
 // render(React.createElement(app), target);
 
 render(
@@ -17,10 +16,10 @@ render(
     target='_blank'
     onClick={e => {
       e.preventDefault();
-      System.import('./modules/some-module').then(SomeModule => {
-        console.log(`received module: ${JSON.stringify(SomeModule.db)}`);
-        SomeModule.default('ES6 modules success!'); // because of export default ...
-        console.log(`module ${SomeModule.name} is updated`);
+      System.import('./modules/some-module').then(module => {
+        console.log(`received module: ${JSON.stringify(module.db)}`);
+        module.default('ES6 modules success!'); // because of export default ...
+        console.log(`module ${module.name} is updated`);
       });
     }}>
       <div>meet webpack 2!</div>
